@@ -1,0 +1,53 @@
+library(MASS)
+library(forecast)
+
+BBtrain <- read.csv("Downloads/train.csv")
+BBtest <- read.csv("Downloads/test.csv")
+
+BBtrain.df<- BBtrain #for code
+View(BBtrain)
+unique(BBtrain$Item)
+
+#we clear data that item can be stocked  >> stockList
+#we clear data that might me attribute of customer or festival season >> attrList also "NONE","Adjustment","Nomad bag" in this list
+stockList.id<-c()
+attrList.id<-c()
+
+stockList<-c("Hot chocolate","Jam","Coffee","Tea","Mineral water","Ella's Kitchen Pouches","Coke","Honey","Art Tray","Adjustment","Tshirt","Valentine's card","Postcard")
+attrList <- c("NONE","Adjustment","Nomad bag","The BART","Fairy Doors","Keeping It Local","Bowl Nic Pitt","Afternoon with the baker","Vegan Feast","Siblings","Nomad","bakewell","Scandinavian")
+stockData <- BBtrain$Item %in% stockList
+attrData <- BBtrain$Item %in% attrList
+
+
+for (i in 1:nrow(BBtrain)){
+  if(stockData[i]==TRUE){
+    stockList.id<-c(stockList.id,i)
+  }
+  if(attrData[i]==TRUE){
+    attrList.id<-c(attrList.id,i)
+  }
+}
+
+#forecast data is the variable that we would like to forecast sell for stock 
+#but we may use some of item in stocklist to be forecast factor :D
+
+forecastData<- BBtrain.df[-c(stockList.id,attrList.id),]
+
+#check head(forecastData) forecastData[100:120,]
+
+#variable that we would like to forecast = f.var
+f.var<-unique(forecastData$Item) #67 item exclude drink
+
+# in my opinion "Tea" "Coffee" "Hot Chocolate" may should be forecasted too :)
+# http://www.eatbydate.com/drinks/coffee-tea-shelf-life/coffee-shelf-life-expiration-date/
+# according to this list coffee can last superlong (compare with pastry) but if it is latte????
+# maybe we forecast just for fun ## to be discussed with Kim
+
+
+#check for duplicated item
+nrow(BBtrain[duplicated(BBtrain[,2:5]),]) 
+#we found that there is 1380 duplicated item
+# but from the data transaction shown, we assume it can be count as "double portion" or like 2 customers come together:D
+
+
+
